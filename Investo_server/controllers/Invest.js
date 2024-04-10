@@ -199,8 +199,10 @@ exports.withrawalRequest = async (req, res) => {
       });
     }
 
-    user.withrawalAmount -= amount;
-    await user.save();
+    if (amount) {
+      user.withrawalAmount -= amount;
+      await user.save();
+    }
 
     const mailRes = await mailSender(
       admin.email,
