@@ -14,8 +14,7 @@ exports.generateReferUrl = async (req, res) => {
       });
     }
 
-    const url = `http://localhost:3000/refer/${id}`;
-    await mailSender(user.email, "Refaral Link", `Link: ${url}`);
+    await mailSender(user.email, "Refaral Code", `Code: ${id}`);
 
     return res.status(200).json({
       success: true,
@@ -78,17 +77,9 @@ const brokerLevelCheck = (sender) => {
 // Except referal
 exports.acceptReferal = async (req, res) => {
   try {
-    const { senderId, firstName, lastName, email, password, confirmPassword } =
-      req.body;
+    const { referCode, userName, email, password, confirmPassword } = req.body;
 
-    if (
-      !senderId ||
-      !firstName ||
-      !lastName ||
-      !email ||
-      !password ||
-      !confirmPassword
-    ) {
+    if (!referCode || !userName || !email || !password || !confirmPassword) {
       return res.status(400).json({
         success: false,
         message: "All Fields Are Required",
@@ -110,7 +101,7 @@ exports.acceptReferal = async (req, res) => {
       });
     }
 
-    const sender = await User.findById(senderId).select("-password");
+    const sender = await User.findById(referCode).select("-password");
     if (!sender) {
       return res.status(400).json({
         success: false,
@@ -121,12 +112,10 @@ exports.acceptReferal = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
-      firstName,
-      lastName,
+      userName,
       email,
       password: hashedPassword,
-      parent: senderId,
-      image: `https://api.dicebear.com/7.x/initials/svg?seed=${firstName} ${lastName}`,
+      parent: referCode,
       withrawalAmount: 0,
     });
 

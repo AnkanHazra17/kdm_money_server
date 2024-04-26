@@ -8,7 +8,7 @@ const {
   checkAddedMembers,
 } = require("../controllers/Refer");
 
-router.get("/get-referal-url", auth, generateReferUrl);
+router.get("/get-referal-code", auth, generateReferUrl);
 
 router.post("/accept-referal", acceptReferal);
 

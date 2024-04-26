@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Revenue = require("../models/Revenue");
+const Product = require("../models/Product");
 
 exports.allUsersFulldata = async (req, res) => {
   try {
@@ -71,6 +72,31 @@ exports.createRevenue = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Error occured while initializing revenue",
+    });
+  }
+};
+
+exports.createCall = async (req, res) => {
+  try {
+    const { name, action } = req.body;
+    if (!name || !action) {
+      return res.status(400).json({
+        success: false,
+        message: "Please Provide Required Data",
+      });
+    }
+
+    const product = await Product.create({ name, action });
+    return res.status(200).json({
+      success: true,
+      message: "Product Call Crated",
+      product,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured while creating product",
     });
   }
 };

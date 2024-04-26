@@ -1,22 +1,17 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const Product = require("../models/Product");
 
 // Sign Up Controller
 exports.signUp = async (req, res) => {
   try {
     // Data fetch
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      confirmPassword,
-      accountType,
-    } = req.body;
+    const { userName, email, password, confirmPassword, accountType } =
+      req.body;
 
     // Validate data
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+    if (!userName || !email || !password || !confirmPassword) {
       return res.status(403).json({
         success: false,
         message: "All fields are required",
@@ -45,12 +40,10 @@ exports.signUp = async (req, res) => {
 
     // Entry create in db
     const user = await User.create({
-      firstName,
-      lastName,
+      userName,
       email,
       accountType,
       password: hashedPassword,
-      image: `https://api.dicebear.com/7.x/initials/svg?seed=${firstName} ${lastName}`,
       withrawalAmount: 0,
     });
 
@@ -126,6 +119,71 @@ exports.logIn = async (req, res) => {
     return res.status(401).json({
       success: false,
       message: "Login failure, please try again later",
+    });
+  }
+};
+
+// Call Or put action
+exports.takeAction = async (req, res) => {
+  try {
+    const { name, action } = req.body;
+    const userId = req.user.id;
+    if (!name || !action) {
+      return res.status(400).json({
+        success: false,
+        message: "Please Provide required data",
+      });
+    }
+    const currentCall = await Product.find().sort({ createdAt: -1 }).limit(1);
+
+    if (!currentCall) {
+      return res.status(404).json({
+        success: false,
+        message: "Current Call Not Found",
+      });
+    }
+
+    if (currentCall[0].usersCalled.includes(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: "User already take action",
+      });
+    }
+
+    if (currentCall[0].name === name && currentCall[0].action === action) {
+      const user = await User.findById(userId).select("-password");
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User Not Found",
+        });
+      }
+
+      currentCall[0].usersCalled.push(userId);
+      await currentCall[0].save();
+
+      const increase = (user.withrawalAmount * 6) / 100;
+      const total = user.withrawalAmount + increase;
+
+      user.withrawalAmount = total;
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Amount Added to your account",
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Product Does not match",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured While Taking Action",
     });
   }
 };

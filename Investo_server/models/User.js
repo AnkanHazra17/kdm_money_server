@@ -2,12 +2,7 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    firstName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    lastName: {
+    userName: {
       type: String,
       required: true,
       trim: true,
@@ -18,10 +13,6 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     password: {
-      type: String,
-      required: true,
-    },
-    image: {
       type: String,
       required: true,
     },
@@ -43,16 +34,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    products: [
-      {
-        name: {
-          type: String,
-        },
-        price: {
-          type: Number,
-        },
-      },
-    ],
     parent: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

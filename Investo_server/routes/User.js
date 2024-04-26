@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 // import controllers
-const { signUp, logIn } = require("../controllers/Auth");
+const { signUp, logIn, takeAction } = require("../controllers/Auth");
 const { auth, isPublic, isAdmin } = require("../middlewares/Auth");
 const {
   privateRouteToken,
@@ -25,5 +25,7 @@ router.post(
   isPublic,
   validatePrivateRouteToken
 );
+
+router.post("/take-action", auth, isPublic, takeAction);
 
 module.exports = router;
