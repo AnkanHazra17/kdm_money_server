@@ -230,10 +230,6 @@ exports.withrawalRequest = async (req, res) => {
 
     const currentTime = new Date();
 
-    console.log(withdrawalTime[0]);
-
-    console.log(currentTime < withdrawalTime[0].startTime);
-
     if (
       currentTime < withdrawalTime[0].startTime ||
       currentTime > withdrawalTime[0].endTime
