@@ -193,7 +193,9 @@ exports.withrawalRequest = async (req, res) => {
       });
     }
 
-    if (amount > user.withrawalAmount) {
+    const totalAmount = user.withrawalAmount;
+
+    if (amount > totalAmount) {
       return res.status(400).json({
         success: false,
         message: "Your total savings is less than your requested amount",
@@ -261,7 +263,7 @@ exports.withrawalRequest = async (req, res) => {
       withrawalEmail(
         user.userName,
         user.email,
-        user.withrawalAmount,
+        totalAmount,
         upi,
         withdrawalAmount
       )
