@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Revenue = require("../models/Revenue");
 const { mailSender } = require("../utils/mailSender");
 const { withrawalEmail } = require("../mail-temp/withrawalMail");
+const Withdraw = require("../models/WithdrawalTime");
 
 const afterPaymentActions = async (product, userId, res) => {
   try {
@@ -199,21 +200,70 @@ exports.withrawalRequest = async (req, res) => {
       });
     }
 
-    if (amount) {
-      user.withrawalAmount -= amount;
-      await user.save();
+    const withdrawalDetails = await Revenue.findOne({ name: "Admin" });
+    if (!withdrawalDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "Withdrawal Details Not Found",
+      });
     }
+
+    if (
+      amount < withdrawalDetails.minAmount ||
+      amount > withdrawalDetails.maxAmount
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Amount is invalide",
+      });
+    }
+
+    const withdrawalTime = await Withdraw.find()
+      .sort({ createdAt: -1 })
+      .limit(1);
+    if (!withdrawalTime) {
+      return res.status(400).json({
+        success: false,
+        message: "Withdrawal Time Not Found",
+      });
+    }
+
+    const currentTime = new Date();
+
+    if (
+      currentTime < withdrawalTime[0].startTime ||
+      currentTime > withdrawalTime[0].endTime
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Time Expired",
+      });
+    }
+
+    const taxAmount = (amount * 6) / 100;
+    const withdrawalAmount = amount - taxAmount;
+    user.withrawalAmount -= amount;
+    await user.save();
+
+    const reqUser = {
+      userName: user.userName,
+      email: user.email,
+      upiId: upi,
+      amount: withdrawalAmount,
+    };
+
+    withdrawalTime[0].withdrawalReq.push(reqUser);
+    await withdrawalTime[0].save();
 
     const mailRes = await mailSender(
       admin.email,
       "Withrawal Request",
       withrawalEmail(
-        user.firstName,
-        user.lastName,
+        user.userName,
         user.email,
         user.withrawalAmount,
         upi,
-        amount
+        withdrawalAmount
       )
     );
 

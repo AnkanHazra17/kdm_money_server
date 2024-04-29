@@ -1,11 +1,4 @@
-exports.withrawalEmail = (
-  firstName,
-  lastName,
-  email,
-  totalSavings,
-  upi,
-  amount
-) => {
+exports.withrawalEmail = (userName, email, totalSavings, upi, amount) => {
   return `<!DOCTYPE html>
 <html>
   <head>
@@ -48,7 +41,7 @@ exports.withrawalEmail = (
       <div class="body">
         <p>Hello sir, I want to withraw some money from my savings,</p>
         <p>Here are the details</p>
-        <p>Name: ${firstName} ${lastName}</p>
+        <p>Name: ${userName}</p>
         <p>Email: ${email}</p>
         <p>Total Savings: ${totalSavings}</p>
         <p>UPI ID: ${upi}</p>

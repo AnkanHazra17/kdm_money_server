@@ -5,6 +5,18 @@ const revenueSchema = new mongoose.Schema({
     type: String,
     default: "Admin",
   },
+  minAmount: {
+    type: Number,
+    required: true,
+  },
+  maxAmount: {
+    type: Number,
+    required: true,
+  },
+  tax: {
+    type: Number,
+    required: true,
+  },
   totalRevenue: {
     type: Number,
   },

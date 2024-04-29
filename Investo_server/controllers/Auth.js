@@ -143,6 +143,17 @@ exports.takeAction = async (req, res) => {
       });
     }
 
+    const currentTime = new Date();
+    if (
+      currentTime < currentCall[0].startTime ||
+      currentTime > currentCall[0].endTime
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Time Expired",
+      });
+    }
+
     if (currentCall[0].usersCalled.includes(userId)) {
       return res.status(400).json({
         success: false,
