@@ -79,7 +79,7 @@ exports.createRevenue = async (req, res) => {
 
 exports.createProducts = async (req, res) => {
   try {
-    const { name, price, change } = req.body;
+    const { name, price, change, rise, call } = req.body;
 
     if (!name || !price || !change) {
       return res.status(400).json({
@@ -92,6 +92,8 @@ exports.createProducts = async (req, res) => {
       name: name,
       price: price,
       change: change,
+      rise: rise,
+      call: call,
     });
     return res.status(200).json({
       success: true,

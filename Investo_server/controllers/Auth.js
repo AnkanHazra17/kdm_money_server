@@ -126,70 +126,43 @@ exports.logIn = async (req, res) => {
 // Call Or put action
 exports.takeAction = async (req, res) => {
   try {
-    const { name, action } = req.body;
+    const { productId, call } = req.body;
     const userId = req.user.id;
-    if (!name || !action) {
-      return res.status(400).json({
-        success: false,
-        message: "Please Provide required data",
-      });
-    }
-    const currentCall = await Product.find().sort({ createdAt: -1 }).limit(1);
 
-    if (!currentCall) {
+    const product = await Product.findById(productId);
+    if (!product) {
       return res.status(404).json({
         success: false,
-        message: "Current Call Not Found",
+        message: "Product Not found",
       });
     }
 
-    const currentTime = new Date();
-    if (
-      currentTime < currentCall[0].startTime ||
-      currentTime > currentCall[0].endTime
-    ) {
-      return res.status(400).json({
+    const user = await User.findById(userId).select("-password");
+    if (!user) {
+      return res.status(404).json({
         success: false,
-        message: "Time Expired",
+        message: "User Not Found",
       });
     }
 
-    if (currentCall[0].usersCalled.includes(userId)) {
-      return res.status(400).json({
-        success: false,
-        message: "User already take action",
-      });
-    }
+    const balance = user.withrawalAmount;
+    let finalBalance;
 
-    if (currentCall[0].name === name && currentCall[0].action === action) {
-      const user = await User.findById(userId).select("-password");
-
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: "User Not Found",
-        });
-      }
-
-      currentCall[0].usersCalled.push(userId);
-      await currentCall[0].save();
-
-      const increase = (user.withrawalAmount * 6) / 100;
-      const total = user.withrawalAmount + increase;
-
-      user.withrawalAmount = total;
-      await user.save();
-
-      return res.status(200).json({
-        success: true,
-        message: "Amount Added to your account",
-      });
+    if (product.call !== call) {
+      const decrease = (balance * 6) / 100;
+      finalBalance = balance - decrease;
     } else {
-      return res.status(400).json({
-        success: false,
-        message: "Product Does not match",
-      });
+      const increase = (balance * 6) / 100;
+      finalBalance = balance + increase;
     }
+
+    user.withrawalAmount = finalBalance;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Your balance updated",
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
