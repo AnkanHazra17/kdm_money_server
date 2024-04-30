@@ -5,6 +5,7 @@ const Revenue = require("../models/Revenue");
 const { mailSender } = require("../utils/mailSender");
 const { withrawalEmail } = require("../mail-temp/withrawalMail");
 const Withdraw = require("../models/WithdrawalTime");
+const WithdrawalReq = require("../models/WithdrawalReq");
 
 const afterPaymentActions = async (product, userId, res) => {
   try {
@@ -247,14 +248,14 @@ exports.withrawalRequest = async (req, res) => {
     user.withrawalAmount -= amount;
     await user.save();
 
-    const reqUser = {
+    const withdrawalrequest = await WithdrawalReq.create({
       userName: user.userName,
       email: user.email,
       upi: upi,
       amount: withdrawalAmount,
-    };
+    });
 
-    withdrawalTime[0].withdrawalReq.push(reqUser);
+    withdrawalTime[0].withdrawalReq.push(withdrawalrequest._id);
     await withdrawalTime[0].save();
 
     const mailRes = await mailSender(

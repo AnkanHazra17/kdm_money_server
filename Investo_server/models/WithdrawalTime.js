@@ -11,28 +11,8 @@ const withdrawalSchema = new mongoose.Schema({
   },
   withdrawalReq: [
     {
-      userName: {
-        type: String,
-        required: true,
-      },
-      email: {
-        type: String,
-        required: true,
-      },
-      upi: {
-        type: String,
-        required: true,
-      },
-      amount: {
-        type: Number,
-        required: true,
-      },
-      status: {
-        type: String,
-        required: true,
-        default: "Pending",
-        enum: ["Pending", "Approved"],
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "WithdrawalReq",
     },
   ],
   createdAt: {

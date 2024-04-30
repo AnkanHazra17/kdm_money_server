@@ -198,3 +198,56 @@ exports.takeAction = async (req, res) => {
     });
   }
 };
+
+exports.getUsersAllData = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId)
+      .select("-password")
+      .populate("parent", "userName email");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User Not Found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Users Details Found Successfully",
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured While Fetching Users Details",
+    });
+  }
+};
+
+exports.getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find();
+
+    if (!products) {
+      return res.status(404).json({
+        success: false,
+        message: "Products Not Found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Products Fetched Successfully",
+      products,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured While Fetching Products",
+    });
+  }
+};

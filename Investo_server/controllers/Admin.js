@@ -77,27 +77,83 @@ exports.createRevenue = async (req, res) => {
   }
 };
 
-exports.createCall = async (req, res) => {
+exports.createProducts = async (req, res) => {
   try {
-    const { name, action, startTime, endTime } = req.body;
-    if (!name || !action || !startTime || !endTime) {
+    const { name, price, change } = req.body;
+
+    if (!name || !price || !change) {
       return res.status(400).json({
         success: false,
         message: "Please Provide Required Data",
       });
     }
 
-    const product = await Product.create({ name, action, startTime, endTime });
+    const product = await Product.create({
+      name: name,
+      price: price,
+      change: change,
+    });
     return res.status(200).json({
       success: true,
-      message: "Product Call Crated",
-      product,
+      message: "Product Created Successfully",
     });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
       success: false,
-      message: "Error Occured while creating product",
+      message: "Error Occured While Creating Product",
+    });
+  }
+};
+
+exports.createCall = async (req, res) => {
+  try {
+    const { productId, call } = req.body;
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product Not Found",
+      });
+    }
+    product.call = call;
+    await product.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Call Created",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured while creating call",
+    });
+  }
+};
+
+exports.deleteProduct = async (req, res) => {
+  try {
+    const { productId } = req.body;
+    if (!productId) {
+      return res.status(400).json({
+        success: false,
+        message: "Please Provide required data",
+      });
+    }
+
+    await Product.findByIdAndDelete(productId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Product Deleted",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured While deleting Product",
     });
   }
 };
@@ -173,4 +229,37 @@ exports.setWithdralAmount = async (req, res) => {
       message: "Error Occured While Updating withrawal amount",
     });
   }
+};
+
+exports.getWithdrawalRequests = async (req, res) => {
+  try {
+    const allReq = await Withdraw.find();
+    if (!allReq) {
+      return res.status(404).json({
+        success: false,
+        message: "Withdrawal req not found",
+      });
+    }
+
+    const allWithdrawal = allReq.map((withdraw) => withdraw.withdrawalReq);
+    const withdrawalData = allWithdrawal.filter((arr) => arr.length > 0).flat();
+
+    return res.status(200).json({
+      success: true,
+      message: "All Withdrawal Requests Found",
+      withdrawalData,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured While Getting All Withdrawal Requests",
+    });
+  }
+};
+
+exports.approveWithdrawalRequest = async (req, res) => {
+  try {
+    const { requsetId } = req.body;
+  } catch (error) {}
 };

@@ -2,7 +2,13 @@ const express = require("express");
 const router = express.Router();
 
 // import controllers
-const { signUp, logIn, takeAction } = require("../controllers/Auth");
+const {
+  signUp,
+  logIn,
+  takeAction,
+  getUsersAllData,
+  getAllProducts,
+} = require("../controllers/Auth");
 const { auth, isPublic, isAdmin } = require("../middlewares/Auth");
 const {
   privateRouteToken,
@@ -27,5 +33,8 @@ router.post(
 );
 
 router.post("/take-action", auth, isPublic, takeAction);
+router.get("/user-details", auth, isPublic, getUsersAllData);
+
+router.get("/fetch-all-products", auth, getAllProducts);
 
 module.exports = router;

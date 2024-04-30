@@ -4,29 +4,21 @@ const productSchema = new mongoose.Schema({
   name: {
     type: String,
   },
-  action: {
+  price: {
+    type: Number,
+  },
+  rise: {
+    type: Boolean,
+  },
+  call: {
+    type: Boolean,
+  },
+  change: {
     type: String,
-    required: true,
-    enum: ["Call", "Put"],
-  },
-  usersCalled: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-  ],
-  startTime: {
-    type: Date,
-    required: true,
-  },
-  endTime: {
-    type: Date,
-    required: true,
   },
   createdAt: {
     type: Date,
     default: Date.now(),
-    expires: 24 * 60 * 60,
   },
 });
 
