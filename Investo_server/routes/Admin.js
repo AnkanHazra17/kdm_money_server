@@ -23,7 +23,7 @@ router.get("/get-all-withdrawal-req", auth, isAdmin, getWithdrawalRequests);
 
 // Product Routes
 router.post("/create-product", auth, isAdmin, createProducts);
-router.post("/createCall", auth, isAdmin, createCall);
-router.post("/delete-product", auth, isAdmin, deleteProduct);
+router.put("/createCall", auth, isAdmin, createCall);
+router.delete("/delete-product", auth, isAdmin, deleteProduct);
 
 module.exports = router;

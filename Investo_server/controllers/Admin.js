@@ -145,6 +145,14 @@ exports.deleteProduct = async (req, res) => {
       });
     }
 
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product Not Found",
+      });
+    }
+
     await Product.findByIdAndDelete(productId);
 
     return res.status(200).json({

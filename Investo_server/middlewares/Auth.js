@@ -21,6 +21,7 @@ exports.auth = async (req, res, next) => {
       const decode = jwt.verify(token, process.env.JWT_SECRET);
       req.user = decode;
     } catch (error) {
+      console.log(error);
       return res.status(401).json({
         success: false,
         message: "Token is invalide",
