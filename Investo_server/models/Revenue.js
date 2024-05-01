@@ -13,9 +13,24 @@ const revenueSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  tax: {
+  withdrawalTax: {
     type: Number,
     required: true,
+  },
+  dipositeTax: {
+    type: Number,
+  },
+  inviteBonus: {
+    type: Number,
+  },
+  levelOneBouns: {
+    type: Number,
+  },
+  levelTwoBonus: {
+    type: Number,
+  },
+  levelThreeBonus: {
+    type: Number,
   },
   totalRevenue: {
     type: Number,

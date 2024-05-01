@@ -208,8 +208,26 @@ exports.setWithdrawalTime = async (req, res) => {
 
 exports.setWithdralAmount = async (req, res) => {
   try {
-    const { minAmount, maxAmount, tax } = req.body;
-    if (!minAmount || !maxAmount || !tax) {
+    const {
+      minAmount,
+      maxAmount,
+      withdrawalTax,
+      dipositeTax,
+      inviteBonus,
+      levelOneBonus,
+      levelTwoBonus,
+      levelThreeBonus,
+    } = req.body;
+    if (
+      !minAmount ||
+      !maxAmount ||
+      !withdrawalTax ||
+      !dipositeTax ||
+      !inviteBonus ||
+      !levelOneBonus ||
+      !levelTwoBonus ||
+      !levelThreeBonus
+    ) {
       return res.status(400).json({
         success: false,
         message: "Please provide required data",
@@ -226,7 +244,12 @@ exports.setWithdralAmount = async (req, res) => {
 
     revenue.minAmount = minAmount;
     revenue.maxAmount = maxAmount;
-    revenue.tax = tax;
+    revenue.withdrawalTax = withdrawalTax;
+    revenue.dipositeTax = dipositeTax;
+    revenue.inviteBonus = inviteBonus;
+    revenue.levelOneBouns = levelOneBonus;
+    revenue.levelTwoBonus = levelTwoBonus;
+    revenue.levelThreeBonus = levelThreeBonus;
     await revenue.save();
 
     return res.status(200).json({
