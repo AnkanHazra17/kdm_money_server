@@ -110,7 +110,8 @@ exports.createProducts = async (req, res) => {
 
 exports.createCall = async (req, res) => {
   try {
-    const { productId, call } = req.body;
+    const { call } = req.body;
+    const { productId } = req.query;
 
     const product = await Product.findById(productId);
     if (!product) {
