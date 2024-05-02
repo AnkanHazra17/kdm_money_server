@@ -4,10 +4,15 @@ require("dotenv").config();
 // Auth moddleWare
 exports.auth = async (req, res, next) => {
   try {
-    const token =
-      req.cookies.token ||
-      req.body.token ||
-      req.header("Authorization").replace("Bearer ", "");
+    let token = "";
+
+    if (req.cookies.token) {
+      token = req.cookies.token;
+    } else if (req.body.token) {
+      token = req.body.token;
+    } else if (req.header("Authorization")) {
+      token = req.header("Authorization").replace("Bearer ", "");
+    }
 
     if (!token) {
       return res.status(401).json({
