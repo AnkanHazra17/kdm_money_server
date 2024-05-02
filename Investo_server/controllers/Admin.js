@@ -218,6 +218,15 @@ exports.setWithdralAmount = async (req, res) => {
       levelTwoBonus,
       levelThreeBonus,
     } = req.body;
+
+    console.log("minAmount: ", minAmount);
+    console.log("maxAmount: ", maxAmount);
+    console.log("WTax: ", withdrawalTax);
+    console.log("DTax: ", dipositeTax);
+    console.log("InBonus: ", inviteBonus);
+    console.log("l1Bonus: ", levelOneBonus);
+    console.log("l2Bonus: ", levelTwoBonus);
+    console.log("l3Bonus: ", levelThreeBonus);
     if (
       !minAmount ||
       !maxAmount ||
