@@ -2,6 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Product = require("../models/Product");
+const Revenue = require("../models/Revenue");
 
 // Sign Up Controller
 exports.signUp = async (req, res) => {
@@ -221,6 +222,33 @@ exports.getAllProducts = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Error Occured While Fetching Products",
+    });
+  }
+};
+
+exports.getAmountDetails = async (req, res) => {
+  try {
+    const amountsDetails = await Revenue.findOne({ name: "Admin" }).select(
+      "-name"
+    );
+
+    if (!amountsDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "Amounts Details Not Found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Amount Details Fetched successfully",
+      amountsDetails,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured While Fetching Amounts Details",
     });
   }
 };

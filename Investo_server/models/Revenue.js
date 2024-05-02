@@ -7,15 +7,12 @@ const revenueSchema = new mongoose.Schema({
   },
   minAmount: {
     type: Number,
-    required: true,
   },
   maxAmount: {
     type: Number,
-    required: true,
   },
   withdrawalTax: {
     type: Number,
-    required: true,
   },
   dipositeTax: {
     type: Number,
