@@ -91,7 +91,7 @@ exports.logIn = async (req, res) => {
       };
 
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "24h",
+        expiresIn: "1h",
       });
 
       user.token = token;
@@ -99,7 +99,7 @@ exports.logIn = async (req, res) => {
 
       // Create cookie
       const options = {
-        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + 60 * 60 * 1000),
         httpOnly: true,
       };
 
