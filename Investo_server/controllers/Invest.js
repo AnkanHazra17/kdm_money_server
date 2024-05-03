@@ -221,42 +221,41 @@ exports.withrawalRequest = async (req, res) => {
       });
     }
 
-    const withdrawalTime = await Withdraw.find()
-      .sort({ createdAt: -1 })
-      .limit(1);
-    if (!withdrawalTime) {
+    const revenue = await Revenue.find({ name: "Admin" });
+
+    if (!revenue) {
       return res.status(400).json({
         success: false,
-        message: "Withdrawal Time Not Found",
+        message: "Revenue Time Not Found",
       });
     }
 
-    const currentTime = new Date();
+    // const currentTime = new Date();
 
-    if (
-      currentTime < withdrawalTime[0].startTime ||
-      currentTime > withdrawalTime[0].endTime
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Time Expired",
-      });
-    }
+    // if (
+    //   currentTime < withdrawalTime[0].startTime ||
+    //   currentTime > withdrawalTime[0].endTime
+    // ) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Time Expired",
+    //   });
+    // }
 
     const taxAmount = (amount * 6) / 100;
     const withdrawalAmount = amount - taxAmount;
     user.withrawalAmount -= amount;
     await user.save();
 
-    const withdrawalrequest = await WithdrawalReq.create({
+    const withdrawalreq = await WithdrawalReq.create({
       userName: user.userName,
       email: user.email,
       upi: upi,
       amount: withdrawalAmount,
     });
 
-    withdrawalTime[0].withdrawalReq.push(withdrawalrequest._id);
-    await withdrawalTime[0].save();
+    revenue.withdrawalRequest.push(withdrawalreq._id);
+    await revenue.save();
 
     const mailRes = await mailSender(
       admin.email,

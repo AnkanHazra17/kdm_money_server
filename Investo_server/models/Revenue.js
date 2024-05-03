@@ -32,6 +32,12 @@ const revenueSchema = new mongoose.Schema({
   totalRevenue: {
     type: Number,
   },
+  withdrawalRequest: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "WithdrawalReq",
+    },
+  ],
   dailyRevenue: [
     {
       amount: {

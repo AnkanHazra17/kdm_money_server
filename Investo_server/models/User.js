@@ -64,7 +64,13 @@ const userSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
-    allChield: [
+    levelTwoChild: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    levelThreeChild: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

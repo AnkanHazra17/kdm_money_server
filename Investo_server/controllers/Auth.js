@@ -252,3 +252,27 @@ exports.getAmountDetails = async (req, res) => {
     });
   }
 };
+
+exports.getTeam = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate(
+      "levelOneChield levelTwoChild levelThreeChild",
+      "-password"
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User Not Found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Team Feched successFully",
+      levelOneUsers: user.levelOneChield,
+      leveTwoUsers: user.levelTwoChild,
+      levelThreeUsers: user.levelThreeChild,
+    });
+  } catch (error) {}
+};

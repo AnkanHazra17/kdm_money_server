@@ -30,48 +30,51 @@ exports.generateReferUrl = async (req, res) => {
 };
 
 // Check brpker level
-const brokerLevelCheck = (sender) => {
+const brokerLevelCheck = async (sender) => {
+  const allClield =
+    sender.levelOneChield.length +
+    sender.levelTwoChild.length +
+    sender.levelThreeChild.length;
   if (
     sender.levelOneChield.length >= 7 &&
     sender.levelOneChield.length < 12 &&
-    sender.allChield.length >= 30 &&
-    sender.allChield.length < 65
+    allClield >= 30 &&
+    allClield < 65
   ) {
     sender.brokerLevel = "vip_1";
   } else if (
     sender.levelOneChield.length >= 12 &&
     sender.levelOneChield.length < 25 &&
-    sender.allChield.length >= 65 &&
-    sender.allChield.length < 150
+    allClield >= 65 &&
+    allClield < 150
   ) {
     sender.brokerLevel = "vip_2";
   } else if (
     sender.levelOneChield.length >= 25 &&
     sender.levelOneChield.length < 38 &&
-    sender.allChield.length >= 150 &&
-    sender.allChield.length < 280
+    allClield >= 150 &&
+    allClield < 280
   ) {
     sender.brokerLevel = "vip_3";
   } else if (
     sender.levelOneChield.length >= 38 &&
     sender.levelOneChield.length < 50 &&
-    sender.allChield.length >= 280 &&
-    sender.allChield.length < 650
+    allClield >= 280 &&
+    allClield < 650
   ) {
     sender.brokerLevel = "vip_4";
   } else if (
     sender.levelOneChield.length >= 50 &&
     sender.levelOneChield.length < 62 &&
-    sender.allChield.length >= 650 &&
-    sender.allChield.length < 1300
+    allClield >= 650 &&
+    allClield < 1300
   ) {
     sender.brokerLevel = "vip_5";
-  } else if (
-    sender.levelOneChield.length >= 62 &&
-    sender.allChield.length >= 1300
-  ) {
+  } else if (sender.levelOneChield.length >= 62 && allClield >= 1300) {
     sender.brokerLevel = "vip_6";
   }
+
+  await sender.save();
 };
 
 // Except referal
@@ -131,10 +134,6 @@ exports.acceptReferal = async (req, res) => {
       sender.levelOneChield.push(user._id);
     }
 
-    if (!sender.allChield.includes(user._id)) {
-      sender.allChield.push(user._id);
-    }
-
     await sender.save();
 
     // Senders parent
@@ -142,8 +141,8 @@ exports.acceptReferal = async (req, res) => {
       "-password"
     );
     if (sendersParent) {
-      if (!sendersParent.allChield.includes(user._id)) {
-        sendersParent.allChield.push(user._id);
+      if (!sendersParent.levelTwoChild.includes(user._id)) {
+        sendersParent.levelTwoChild.push(user._id);
       }
 
       await sendersParent.save();
@@ -156,8 +155,8 @@ exports.acceptReferal = async (req, res) => {
         sendersParent.parent
       ).select("-password");
       if (sendersGrandParent) {
-        if (!sendersGrandParent.allChield.includes(user._id)) {
-          sendersGrandParent.allChield.push(user._id);
+        if (!sendersGrandParent.levelThreeChild.includes(user._id)) {
+          sendersGrandParent.levelThreeChild.push(user._id);
         }
 
         await sendersGrandParent.save();
@@ -175,6 +174,7 @@ exports.acceptReferal = async (req, res) => {
       message: "Referal eccpted successfully",
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: false,
       message: "Error Occured while accepting referal",
