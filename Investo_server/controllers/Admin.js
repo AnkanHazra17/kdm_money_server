@@ -2,14 +2,19 @@ const User = require("../models/User");
 const Revenue = require("../models/Revenue");
 const Product = require("../models/Product");
 const Withdraw = require("../models/WithdrawalTime");
+const withdrawalReq = require("../models/WithdrawalReq");
 
 exports.allUsersFulldata = async (req, res) => {
   try {
     const users = await User.find({
       accountType: { $ne: "Admin" },
     })
-      .select("-password")
-      .populate("parent", "firstName lastName email");
+      .select("-password -membersAdded")
+      .populate(
+        "parent levelOneChield levelTwoChild levelThreeChild",
+        "userName email phone"
+      )
+      .populate("paymmentHistory withdrawalHistry");
 
     if (!users) {
       return res.status(404).json({
@@ -88,6 +93,14 @@ exports.createProducts = async (req, res) => {
       });
     }
 
+    const existingProduct = await Product.findOne({ name: name });
+    if (existingProduct) {
+      return res.status(400).json({
+        success: false,
+        message: "Product already exists",
+      });
+    }
+
     const product = await Product.create({
       name: name,
       price: price,
@@ -136,6 +149,62 @@ exports.createCall = async (req, res) => {
   }
 };
 
+exports.editProducts = async (req, res) => {
+  try {
+    const { name, price, change, rise, call } = req.body;
+    const { productId } = req.query;
+
+    if (
+      !name ||
+      !price ||
+      !change ||
+      rise === undefined ||
+      call === undefined ||
+      !productId
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All Fields are required",
+      });
+    }
+
+    const existingProduct = await Product.findOne({ name: name });
+    if (existingProduct) {
+      return res.status(400).json({
+        success: false,
+        message: "Product Exists",
+      });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product Not Found",
+      });
+    }
+
+    product.name = name;
+    product.price = price;
+    product.rise = rise;
+    product.change = change;
+    product.call = call;
+
+    await product.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Product Updated Successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured While Updating Product",
+    });
+  }
+};
+
 exports.deleteProduct = async (req, res) => {
   try {
     const { productId } = req.body;
@@ -169,33 +238,33 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-exports.setWithdrawalTime = async (req, res) => {
+exports.setTime = async (req, res) => {
   try {
-    const { startTime, endTime } = req.body;
-    if (!startTime || !endTime) {
+    const { withStartTime, withEndTime, callStartTime, callEndTime } = req.body;
+    if (!withStartTime || !withEndTime || !callStartTime || callEndTime) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
       });
     }
 
-    const existingTime = await Withdraw.findOne({
-      startTime: startTime,
-      endTime: endTime,
-    });
-
-    if (existingTime) {
-      return res.status(400).json({
+    const revenue = await Revenue.findOne({ name: "Admin" });
+    if (!revenue) {
+      return res.status(404).jsoon({
         success: false,
-        message: "Time Already Sated",
+        message: "Revenue Data Not Found",
       });
     }
 
-    const timeSeted = await Withdraw.create({ startTime, endTime });
+    revenue.withdrawTime.start = withStartTime;
+    revenue.withdrawTime.end = withEndTime;
+    revenue.callTime.start = callStartTime;
+    revenue.callTime.end = callEndTime;
+    await revenue.save();
+
     return res.status(200).json({
       success: true,
-      message: "Withdrawal Time Set",
-      timeSeted,
+      message: "Time Setup successfull",
     });
   } catch (error) {
     console.log(error);
@@ -206,7 +275,7 @@ exports.setWithdrawalTime = async (req, res) => {
   }
 };
 
-exports.setWithdralAmount = async (req, res) => {
+exports.setAmount = async (req, res) => {
   try {
     const {
       minAmount,
@@ -219,14 +288,6 @@ exports.setWithdralAmount = async (req, res) => {
       levelThreeBonus,
     } = req.body;
 
-    console.log("minAmount: ", minAmount);
-    console.log("maxAmount: ", maxAmount);
-    console.log("WTax: ", withdrawalTax);
-    console.log("DTax: ", dipositeTax);
-    console.log("InBonus: ", inviteBonus);
-    console.log("l1Bonus: ", levelOneBonus);
-    console.log("l2Bonus: ", levelTwoBonus);
-    console.log("l3Bonus: ", levelThreeBonus);
     if (
       !minAmount ||
       !maxAmount ||
@@ -276,21 +337,22 @@ exports.setWithdralAmount = async (req, res) => {
 
 exports.getWithdrawalRequests = async (req, res) => {
   try {
-    const allReq = await Withdraw.find();
-    if (!allReq) {
+    const revenue = await Revenue.find({ name: "Admin" }).populate(
+      "withdrawalRequest"
+    );
+    if (!revenue) {
       return res.status(404).json({
         success: false,
-        message: "Withdrawal req not found",
+        message: "Revnue Details Not Found",
       });
     }
 
-    const allWithdrawal = allReq.map((withdraw) => withdraw.withdrawalReq);
-    const withdrawalData = allWithdrawal.filter((arr) => arr.length > 0).flat();
+    const { withdrawalRequest } = revenue;
 
     return res.status(200).json({
       success: true,
-      message: "All Withdrawal Requests Found",
-      withdrawalData,
+      message: "Withdrawal Requests Fetched SuccessFully",
+      withdrawalReq: withdrawalRequest,
     });
   } catch (error) {
     console.log(error);
@@ -303,6 +365,22 @@ exports.getWithdrawalRequests = async (req, res) => {
 
 exports.approveWithdrawalRequest = async (req, res) => {
   try {
-    const { requsetId } = req.body;
-  } catch (error) {}
+    const { requsetId } = req.query;
+    const requset = await withdrawalReq.findByIdAndUpdate(
+      { _id: requsetId },
+      { status: "Approved" },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Request Approved",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured While Approving Request Requests",
+    });
+  }
 };

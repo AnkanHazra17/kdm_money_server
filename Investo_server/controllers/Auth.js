@@ -8,11 +8,11 @@ const Revenue = require("../models/Revenue");
 exports.signUp = async (req, res) => {
   try {
     // Data fetch
-    const { userName, email, password, confirmPassword, accountType } =
+    const { userName, email, phoneNo, password, confirmPassword, accountType } =
       req.body;
 
     // Validate data
-    if (!userName || !email || !password || !confirmPassword) {
+    if (!userName || !email || !password || !confirmPassword || !phoneNo) {
       return res.status(403).json({
         success: false,
         message: "All fields are required",
@@ -43,6 +43,7 @@ exports.signUp = async (req, res) => {
     const user = await User.create({
       userName,
       email,
+      phone: phoneNo,
       accountType,
       password: hashedPassword,
       withrawalAmount: 0,
@@ -130,6 +131,32 @@ exports.takeAction = async (req, res) => {
     const { productId, call } = req.body;
     const userId = req.user.id;
 
+    if (!product || call === undefined || !userId) {
+      return res.status(400).json({
+        success: false,
+        message: "All Fields Are Required",
+      });
+    }
+
+    const currentDate = new Date();
+    const revenue = await Revenue.findOne({ name: "Admin" });
+    if (!revenue) {
+      return res.status(404).json({
+        success: false,
+        message: "Revenue Not Found",
+      });
+    }
+
+    if (
+      currentDate < revenue.callTime.start ||
+      currentDate > revenue.callTime.end
+    ) {
+      return res.statue(400).json({
+        success: false,
+        message: "You are not allowed to take any action",
+      });
+    }
+
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({
@@ -177,8 +204,11 @@ exports.getUsersAllData = async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await User.findById(userId)
-      .select("-password")
-      .populate("parent", "userName email");
+      .select(
+        "-password -levelOneChield -levelTwoChild -levelThreeChild -membersAdded"
+      )
+      .populate("parent", "userName email phone")
+      .populate("paymmentHistory withdrawalHistry");
 
     if (!user) {
       return res.status(404).json({
@@ -257,7 +287,7 @@ exports.getTeam = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate(
       "levelOneChield levelTwoChild levelThreeChild",
-      "-password"
+      "userName email phone"
     );
 
     if (!user) {

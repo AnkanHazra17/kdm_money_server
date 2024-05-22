@@ -12,6 +12,10 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    phone: {
+      type: Number,
+      required: true,
+    },
     password: {
       type: String,
       required: true,
@@ -81,6 +85,18 @@ const userSchema = new mongoose.Schema(
       default: "none",
       enum: ["none", "vip_1", "vip_2", "vip_3", "vip_4", "vip_5", "vip_6"],
     },
+    paymmentHistory: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "PaymentHistory",
+      },
+    ],
+    withdrawalHistry: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "WithdrawalReq",
+      },
+    ],
   },
   {
     timestamps: true,

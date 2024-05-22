@@ -32,6 +32,22 @@ const revenueSchema = new mongoose.Schema({
   totalRevenue: {
     type: Number,
   },
+  withdrawTime: {
+    start: {
+      type: Date,
+    },
+    end: {
+      type: Date,
+    },
+  },
+  callTime: {
+    start: {
+      type: Date,
+    },
+    end: {
+      type: Date,
+    },
+  },
   withdrawalRequest: [
     {
       type: mongoose.Schema.Types.ObjectId,

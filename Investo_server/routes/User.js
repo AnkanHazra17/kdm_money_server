@@ -12,6 +12,7 @@ const {
   getTeam,
 } = require("../controllers/Auth");
 const { auth, isPublic, isAdmin } = require("../middlewares/Auth");
+
 const {
   privateRouteToken,
   validatePrivateRouteToken,

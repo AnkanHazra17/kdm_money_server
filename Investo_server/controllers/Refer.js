@@ -80,7 +80,8 @@ const brokerLevelCheck = async (sender) => {
 // Except referal
 exports.acceptReferal = async (req, res) => {
   try {
-    const { referCode, userName, email, password, confirmPassword } = req.body;
+    const { referCode, userName, email, phoneNo, password, confirmPassword } =
+      req.body;
 
     if (!referCode || !userName || !email || !password || !confirmPassword) {
       return res.status(400).json({
@@ -117,6 +118,7 @@ exports.acceptReferal = async (req, res) => {
     const user = await User.create({
       userName,
       email,
+      phone: phoneNo,
       password: hashedPassword,
       parent: referCode,
       withrawalAmount: 0,

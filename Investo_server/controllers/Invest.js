@@ -4,12 +4,15 @@ const User = require("../models/User");
 const Revenue = require("../models/Revenue");
 const { mailSender } = require("../utils/mailSender");
 const { withrawalEmail } = require("../mail-temp/withrawalMail");
-const Withdraw = require("../models/WithdrawalTime");
 const WithdrawalReq = require("../models/WithdrawalReq");
+const Paymenthistory = require("../models/PaymentHistory");
 
-const afterPaymentActions = async (product, userId, res) => {
+// After Payment call This Function
+exports.afterPaymentActions = async (req, res) => {
   try {
-    if (!product || !userId) {
+    const { amount } = req.body;
+    const userId = req.user.id;
+    if (!userId || !amount) {
       return res.status(400).json({
         success: false,
         message: "Please Provide Required data",
@@ -24,14 +27,31 @@ const afterPaymentActions = async (product, userId, res) => {
       });
     }
 
-    user.products.push(product);
+    const revenue = await Revenue.findOne({ name: "Admin" });
+    if (!revenue) {
+      return res.status(404).json({
+        success: false,
+        message: "Revenue Not found",
+      });
+    }
+
+    const paymentHistory = await Paymenthistory.create({ amount: amount });
+
+    const dipositTax = revenue.dipositeTax;
+    const decrese = (amount * dipositTax) / 100;
+    const userAmount = amount - decrese;
+    user.withrawalAmount += userAmount;
+    user.paymmentHistory.push(paymentHistory._id);
+    await user.save();
+
+    const { levelOneBouns, levelTwoBonus, levelThreeBonus } = revenue;
 
     // Update Users Parent
     const usersParentId = user?.parent;
     const usersParent = await User.findById(usersParentId).select("-password");
     if (usersParent) {
       if (!usersParent.levelOneCommision) {
-        const one_money = product?.price * (10 / 100);
+        const one_money = product?.price * (levelOneBouns / 100);
         usersParent.withrawalAmount += one_money;
         usersParent.levelOneCommision = true;
         await usersParent.save();
@@ -43,7 +63,7 @@ const afterPaymentActions = async (product, userId, res) => {
       );
       if (levelTwoParent) {
         if (!levelTwoParent.levelTwoCommision) {
-          const two_money = product?.price * (4 / 100);
+          const two_money = product?.price * (levelTwoBonus / 100);
           levelTwoParent.withrawalAmount += two_money;
           levelTwoParent.levelTwoCommision = true;
           await levelTwoParent.save();
@@ -55,7 +75,7 @@ const afterPaymentActions = async (product, userId, res) => {
         );
         if (levelthreeParent) {
           if (!levelthreeParent.levelThreeCommition) {
-            const three_money = product?.price * (2 / 100);
+            const three_money = product?.price * (levelThreeBonus / 100);
             levelthreeParent.withrawalAmount += three_money;
             levelthreeParent.levelThreeCommition = true;
             await levelthreeParent.save();
@@ -64,102 +84,21 @@ const afterPaymentActions = async (product, userId, res) => {
       }
     }
 
-    const revenue = await Revenue.findOne({ name: "Admin" });
-    if (!revenue) {
-      return res.status(404).json({
-        success: false,
-        message: "Revenue Not found",
-      });
-    }
-
-    revenue.totalRevenue += product?.price;
-    revenue.dailyRevenue.push({ amount: product?.price });
+    revenue.totalRevenue += amount;
+    revenue.dailyRevenue.push({ amount: amount });
     await revenue.save();
-  } catch (error) {}
-};
-
-exports.capterPayment = async (req, res) => {
-  try {
-    const { product } = req.body;
-
-    if (!product) {
-      return res.status(400).json({
-        success: false,
-        message: "Please Provide Product",
-      });
-    }
-
-    const amount = product?.price;
-    const options = {
-      amount: amount * 100,
-      currency: "INR",
-      receipt: Math.random(Date.now()).toString(),
-    };
-
-    // Initiate the payment using razorpay
-    try {
-      const paymentResponse = await instance.orders.create(options);
-
-      res.json({
-        success: true,
-        data: paymentResponse,
-      });
-    } catch (error) {
-      console.log(error);
-      res.status(400).json({
-        success: false,
-        message: "Could Not Initiate the order",
-      });
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server error while creating order",
-    });
-  }
-};
-
-exports.verifyPayment = async (req, res) => {
-  const razorpay_order_id = req.body?.razorpay_order_id;
-  const razorpay_payment_id = req.body?.razorpay_payment_id;
-  const razorpay_signature = req.body?.razorpay_signature;
-  const product = req.body?.product;
-  const userId = req.user.id;
-
-  if (
-    !razorpay_order_id ||
-    !razorpay_payment_id ||
-    !razorpay_signature ||
-    product ||
-    !userId
-  ) {
-    return res.status(400).json({
-      success: false,
-      message: "Payment Failed: All fields are required",
-    });
-  }
-
-  let body = razorpay_order_id + "|" + razorpay_payment_id;
-  const expectedSignature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_SECRET)
-    .update(body.toString())
-    .digest("hex");
-
-  if (expectedSignature === razorpay_signature) {
-    // After Payment actions
-    afterPaymentActions(product, userId, res);
 
     return res.status(200).json({
       success: true,
-      message: "Payment verified",
+      message: "Payment Successful",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "After Payment Actions failed",
     });
   }
-
-  return res.status(500).json({
-    success: false,
-    message: "Payment Failed",
-  });
 };
 
 exports.withrawalRequest = async (req, res) => {
@@ -171,6 +110,25 @@ exports.withrawalRequest = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Please Provide Required Data",
+      });
+    }
+
+    const currentTime = new Date();
+
+    const revenue = await Revenue.findOne({ name: "Admin" });
+    if (!revenue) {
+      return res.status(404).json({
+        success: false,
+        message: "Revenue Not Found",
+      });
+    }
+    if (
+      currentTime < revenue.withdrawTime.start ||
+      currentTime > revenue.withdrawTime.end
+    ) {
+      return res.status(200).json({
+        success: false,
+        message: "You are not allowed to withdraw at this monent",
       });
     }
 
@@ -221,27 +179,6 @@ exports.withrawalRequest = async (req, res) => {
       });
     }
 
-    const revenue = await Revenue.find({ name: "Admin" });
-
-    if (!revenue) {
-      return res.status(400).json({
-        success: false,
-        message: "Revenue Time Not Found",
-      });
-    }
-
-    // const currentTime = new Date();
-
-    // if (
-    //   currentTime < withdrawalTime[0].startTime ||
-    //   currentTime > withdrawalTime[0].endTime
-    // ) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "Time Expired",
-    //   });
-    // }
-
     const taxAmount = (amount * 6) / 100;
     const withdrawalAmount = amount - taxAmount;
     user.withrawalAmount -= amount;
@@ -254,8 +191,11 @@ exports.withrawalRequest = async (req, res) => {
       amount: withdrawalAmount,
     });
 
-    revenue.withdrawalRequest.push(withdrawalreq._id);
-    await revenue.save();
+    withdrawalDetails.withdrawalRequest.push(withdrawalreq._id);
+    await withdrawalDetails.save();
+
+    user.withdrawalHistry.push(withdrawalreq._id);
+    user.save();
 
     const mailRes = await mailSender(
       admin.email,
