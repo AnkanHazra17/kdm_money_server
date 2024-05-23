@@ -384,3 +384,54 @@ exports.approveWithdrawalRequest = async (req, res) => {
     });
   }
 };
+
+exports.deleteLavelUsers = async (req, res) => {
+  try {
+    const { mainId, userId } = req.body;
+
+    if (!mainId || !userId) {
+      return res.status(400).json({
+        success: false,
+        message: "All Fields are required",
+      });
+    }
+
+    const user = await User.findById(mainId).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User Not Found",
+      });
+    }
+
+    if (user.levelOneChield.includes(userId)) {
+      await User.findByIdAndUpdate(mainId, {
+        $pull: { levelOneChield: userId },
+      });
+    }
+
+    if (user.levelTwoChild.includes(userId)) {
+      await User.findByIdAndUpdate(mainId, {
+        $pull: { levelTwoChild: userId },
+      });
+    }
+
+    if (user.levelThreeChild.includes(userId)) {
+      await User.findByIdAndUpdate(mainId, {
+        $pull: { levelThreeChild: userId },
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Chiled deleted successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured While Deleting Child",
+    });
+  }
+};
