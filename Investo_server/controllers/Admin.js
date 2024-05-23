@@ -409,17 +409,18 @@ exports.deleteLavelUsers = async (req, res) => {
       await User.findByIdAndUpdate(mainId, {
         $pull: { levelOneChield: userId },
       });
-    }
-
-    if (user.levelTwoChild.includes(userId)) {
+    } else if (user.levelTwoChild.includes(userId)) {
       await User.findByIdAndUpdate(mainId, {
         $pull: { levelTwoChild: userId },
       });
-    }
-
-    if (user.levelThreeChild.includes(userId)) {
+    } else if (user.levelThreeChild.includes(userId)) {
       await User.findByIdAndUpdate(mainId, {
         $pull: { levelThreeChild: userId },
+      });
+    } else {
+      return res.status(404).json({
+        success: false,
+        message: "This user not found",
       });
     }
 
@@ -435,3 +436,18 @@ exports.deleteLavelUsers = async (req, res) => {
     });
   }
 };
+
+// const updateData = async (mainId, userId) => {
+//   const url = "https://kdm-money-server.onrender.com/api/v1/admin/delete-child";
+//   const data = {
+//     mainId,
+//     userId
+//   };
+
+//   try {
+//     const response = await axios.put(url, data);
+//     console.log("Response:", response.data);
+//   } catch (error) {
+//     console.error("Error:", error);
+//   }
+// };
