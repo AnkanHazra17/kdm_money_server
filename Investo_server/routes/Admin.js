@@ -20,7 +20,7 @@ const {
 router.get("/get-revenue-data", auth, isAdmin, getRevenueDetails);
 router.get("/get-allusers", auth, isAdmin, allUsersFulldata);
 router.post("/init-revenue", auth, isAdmin, createRevenue);
-router.post("/set-withdrawal-time", auth, isAdmin, setTime);
+router.post("/set-time", auth, isAdmin, setTime);
 router.post("/amount-setup", auth, isAdmin, setAmount);
 router.get("/get-all-withdrawal-req", auth, isAdmin, getWithdrawalRequests);
 

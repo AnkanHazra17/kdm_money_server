@@ -241,7 +241,7 @@ exports.deleteProduct = async (req, res) => {
 exports.setTime = async (req, res) => {
   try {
     const { withStartTime, withEndTime, callStartTime, callEndTime } = req.body;
-    if (!withStartTime || !withEndTime || !callStartTime || callEndTime) {
+    if (!withStartTime || !withEndTime || !callStartTime || !callEndTime) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",

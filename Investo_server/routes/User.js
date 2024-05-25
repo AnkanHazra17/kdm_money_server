@@ -10,6 +10,7 @@ const {
   getAllProducts,
   getAmountDetails,
   getTeam,
+  getTimeData,
 } = require("../controllers/Auth");
 const { auth, isPublic, isAdmin } = require("../middlewares/Auth");
 
@@ -42,5 +43,6 @@ router.get("/fetch-all-products", auth, getAllProducts);
 router.get("/fetch-amount-details", auth, getAmountDetails);
 
 router.get("/get-team", auth, getTeam);
+router.get("/get-times-data", auth, getTimeData);
 
 module.exports = router;
