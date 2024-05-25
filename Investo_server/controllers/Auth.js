@@ -131,7 +131,7 @@ exports.takeAction = async (req, res) => {
     const { productId, call } = req.body;
     const userId = req.user.id;
 
-    if (!product || call === undefined || !userId) {
+    if (!productId || call === undefined || !userId) {
       return res.status(400).json({
         success: false,
         message: "All Fields Are Required",
