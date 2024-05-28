@@ -14,7 +14,11 @@ exports.generateReferUrl = async (req, res) => {
       });
     }
 
-    await mailSender(user.email, "Refaral Code", `Code: ${id}`);
+    await mailSender(
+      user.email,
+      "Refaral Link",
+      `Link: http://localhost:5173/signup/${id}`
+    );
 
     return res.status(200).json({
       success: true,
