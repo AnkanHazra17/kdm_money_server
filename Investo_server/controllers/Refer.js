@@ -14,15 +14,10 @@ exports.generateReferUrl = async (req, res) => {
       });
     }
 
-    await mailSender(
-      user.email,
-      "Refaral Link",
-      `Link: https://sspports.xyz/accept-referal/${id}`
-    );
-
     return res.status(200).json({
       success: true,
       message: "Please Check Your Mail",
+      referalUrl: `https://sspports.xyz/accept-referal/${id}`,
     });
   } catch (error) {
     console.log(error);
