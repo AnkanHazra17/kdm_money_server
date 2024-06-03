@@ -17,7 +17,7 @@ exports.generateReferUrl = async (req, res) => {
     await mailSender(
       user.email,
       "Refaral Link",
-      `Link: http://localhost:5173/accept-referal/${id}`
+      `Link: https://sspports.xyz/accept-referal/${id}`
     );
 
     return res.status(200).json({
