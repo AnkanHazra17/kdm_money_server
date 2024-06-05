@@ -186,7 +186,7 @@ exports.withrawalRequest = async (req, res) => {
 
     const withdrawalreq = await WithdrawalReq.create({
       userName: user.userName,
-      email: user.email,
+      phone: user.phone,
       upi: upi,
       amount: withdrawalAmount,
     });

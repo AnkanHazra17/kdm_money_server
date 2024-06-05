@@ -347,12 +347,12 @@ exports.getWithdrawalRequests = async (req, res) => {
       });
     }
 
-    const { withdrawalRequest } = revenue;
+    const allRequest = await withdrawalReq.find();
 
     return res.status(200).json({
       success: true,
       message: "Withdrawal Requests Fetched SuccessFully",
-      withdrawalReq: withdrawalRequest,
+      withdrawalReq: allRequest,
     });
   } catch (error) {
     console.log(error);
@@ -436,18 +436,3 @@ exports.deleteLavelUsers = async (req, res) => {
     });
   }
 };
-
-// const updateData = async (mainId, userId) => {
-//   const url = "https://kdm-money-server.onrender.com/api/v1/admin/delete-child";
-//   const data = {
-//     mainId,
-//     userId
-//   };
-
-//   try {
-//     const response = await axios.put(url, data);
-//     console.log("Response:", response.data);
-//   } catch (error) {
-//     console.error("Error:", error);
-//   }
-// };
