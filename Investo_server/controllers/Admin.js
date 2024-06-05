@@ -3,6 +3,8 @@ const Revenue = require("../models/Revenue");
 const Product = require("../models/Product");
 const Withdraw = require("../models/WithdrawalTime");
 const withdrawalReq = require("../models/WithdrawalReq");
+const mongoose = require("mongoose");
+const { request } = require("express");
 
 exports.allUsersFulldata = async (req, res) => {
   try {
@@ -366,11 +368,19 @@ exports.getWithdrawalRequests = async (req, res) => {
 exports.approveWithdrawalRequest = async (req, res) => {
   try {
     const { requsetId } = req.query;
+
     const requset = await withdrawalReq.findByIdAndUpdate(
       { _id: requsetId },
       { status: "Approved" },
       { new: true }
     );
+
+    if (!requset) {
+      return res.status(400).json({
+        success: false,
+        message: "Request not found",
+      });
+    }
 
     return res.status(200).json({
       success: true,
