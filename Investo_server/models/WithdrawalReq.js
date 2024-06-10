@@ -21,7 +21,7 @@ const withdrawalReqSchema = new mongoose.Schema({
     type: String,
     required: true,
     default: "Pending",
-    enum: ["Pending", "Approved"],
+    enum: ["Pending", "Approved", "Rejected"],
   },
 });
 

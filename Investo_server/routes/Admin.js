@@ -15,6 +15,8 @@ const {
   approveWithdrawalRequest,
   editProducts,
   deleteLavelUsers,
+  rejectWithdrawalRequest,
+  allPaymentHistory,
 } = require("../controllers/Admin");
 
 router.get("/get-revenue-data", auth, isAdmin, getRevenueDetails);
@@ -31,6 +33,8 @@ router.put("/edit-product/", auth, isAdmin, editProducts);
 router.delete("/delete-product", auth, isAdmin, deleteProduct);
 
 router.put("/approve-req", auth, isAdmin, approveWithdrawalRequest);
+router.put("/reject-req", auth, isAdmin, rejectWithdrawalRequest);
 router.put("/delete-child", auth, isAdmin, deleteLavelUsers);
+router.get("/all-payment-history", auth, isAdmin, allPaymentHistory);
 
 module.exports = router;

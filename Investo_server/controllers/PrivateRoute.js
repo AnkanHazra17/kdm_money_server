@@ -1,7 +1,6 @@
 const User = require("../models/User");
 const PRTOken = require("../models/ProtectedRouteToken");
 const crypto = require("crypto");
-const { mailSender } = require("../utils/mailSender");
 
 exports.privateRouteToken = async (req, res) => {
   try {
@@ -20,9 +19,6 @@ exports.privateRouteToken = async (req, res) => {
       email: email,
       prtoken: token,
     });
-
-    const url = `http://localhost:3000/products/${token}`;
-    await mailSender(email, "Product buy link", `Link: ${url}`);
 
     return res.status(200).json({
       success: true,

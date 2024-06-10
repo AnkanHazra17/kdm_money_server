@@ -3,8 +3,7 @@ const Revenue = require("../models/Revenue");
 const Product = require("../models/Product");
 const Withdraw = require("../models/WithdrawalTime");
 const withdrawalReq = require("../models/WithdrawalReq");
-const mongoose = require("mongoose");
-const { request } = require("express");
+const PaymentHistory = require("../models/PaymentHistory");
 
 exports.allUsersFulldata = async (req, res) => {
   try {
@@ -395,6 +394,36 @@ exports.approveWithdrawalRequest = async (req, res) => {
   }
 };
 
+exports.rejectWithdrawalRequest = async (req, res) => {
+  try {
+    const { requsetId } = req.query;
+
+    const requset = await withdrawalReq.findByIdAndUpdate(
+      { _id: requsetId },
+      { status: "Rejected" },
+      { new: true }
+    );
+
+    if (!requset) {
+      return res.status(400).json({
+        success: false,
+        message: "Request not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Request Rejected",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Occured While Approving Request Requests",
+    });
+  }
+};
+
 exports.deleteLavelUsers = async (req, res) => {
   try {
     const { mainId, userId } = req.body;
@@ -443,6 +472,31 @@ exports.deleteLavelUsers = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Error Occured While Deleting Child",
+    });
+  }
+};
+
+exports.allPaymentHistory = async (req, res) => {
+  try {
+    const paymentHistory = await PaymentHistory.find();
+
+    if (!paymentHistory) {
+      return res.status(404).json({
+        success: false,
+        message: "Payment history not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Payment history fetched successfully",
+      paymentHistory,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching payment history",
     });
   }
 };

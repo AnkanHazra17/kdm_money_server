@@ -1,5 +1,4 @@
 const User = require("../models/User");
-const { mailSender } = require("../utils/mailSender");
 const bcrypt = require("bcryptjs");
 
 // Generete and send referal url
@@ -82,10 +81,25 @@ exports.acceptReferal = async (req, res) => {
     const { referCode, userName, email, phoneNo, password, confirmPassword } =
       req.body;
 
-    if (!referCode || !userName || !email || !password || !confirmPassword) {
+    if (
+      !referCode ||
+      !userName ||
+      !email ||
+      !password ||
+      !confirmPassword ||
+      !phoneNo
+    ) {
       return res.status(400).json({
         success: false,
         message: "All Fields Are Required",
+      });
+    }
+
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phoneNo)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone number",
       });
     }
 

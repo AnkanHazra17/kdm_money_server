@@ -19,6 +19,14 @@ exports.signUp = async (req, res) => {
       });
     }
 
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phoneNo)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone number",
+      });
+    }
+
     // Match password and confrimation password
     if (password !== confirmPassword) {
       return res.status(400).json({

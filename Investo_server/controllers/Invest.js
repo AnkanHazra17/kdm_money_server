@@ -2,7 +2,6 @@ const { instance } = require("../config/rezorpay");
 const crypto = require("crypto");
 const User = require("../models/User");
 const Revenue = require("../models/Revenue");
-const { mailSender } = require("../utils/mailSender");
 const { withrawalEmail } = require("../mail-temp/withrawalMail");
 const WithdrawalReq = require("../models/WithdrawalReq");
 const Paymenthistory = require("../models/PaymentHistory");
@@ -196,25 +195,6 @@ exports.withrawalRequest = async (req, res) => {
 
     user.withdrawalHistry.push(withdrawalreq._id);
     user.save();
-
-    const mailRes = await mailSender(
-      admin.email,
-      "Withrawal Request",
-      withrawalEmail(
-        user.userName,
-        user.email,
-        totalAmount,
-        upi,
-        withdrawalAmount
-      )
-    );
-
-    if (!mailRes) {
-      return res.status(400).json({
-        success: false,
-        message: "Withrawal Request failed",
-      });
-    }
 
     return res.status(200).json({
       success: true,
