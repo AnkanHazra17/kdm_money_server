@@ -5,12 +5,24 @@ const Revenue = require("../models/Revenue");
 const { withrawalEmail } = require("../mail-temp/withrawalMail");
 const WithdrawalReq = require("../models/WithdrawalReq");
 const Paymenthistory = require("../models/PaymentHistory");
+const PaymentReqId = require("../models/PaymentReqId");
+const { default: axios } = require("axios");
+
+function generateNumericId(length) {
+  let result = "";
+  while (result.length < length) {
+    // Generate a random byte
+    const randomByte = crypto.randomBytes(1)[0];
+    // Convert the byte to a digit (0-9) and add to result if it's a valid digit
+    const digit = randomByte % 10;
+    result += digit.toString();
+  }
+  return result;
+}
 
 // After Payment call This Function
-exports.afterPaymentActions = async (req, res) => {
+const afterPaymentActions = async (amount, userId) => {
   try {
-    const { amount } = req.body;
-    const userId = req.user.id;
     if (!userId || !amount) {
       return res.status(400).json({
         success: false,
@@ -205,6 +217,81 @@ exports.withrawalRequest = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Something went while withrawaling money",
+    });
+  }
+};
+
+exports.initializePayment = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { amount } = req.body;
+    const reqId = generateNumericId(8);
+    const paymentReq = await PaymentReqId.create({ payReqId: reqId });
+
+    if (!paymentReq) {
+      return res.status(400).json({
+        success: false,
+        message: "Error creating payment reqId",
+      });
+    }
+
+    const user = await User.findById(userId).select("-password");
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User Not Found",
+      });
+    }
+
+    const domainName = "sspports.xyz/";
+
+    const url = `https://${domainName}/?reqid=${reqId}&am=${amount}&status=SUCCESS/FAILED&utr=UTR_NUMBER&paymentfrom=${user.userName}`;
+
+    const paymentResponse = await axios.get(url);
+
+    return res.status(200).json({
+      success: true,
+      message: "Transaction under process",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error initializing payment",
+    });
+  }
+};
+
+exports.verifyPayment = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { amount } = req.body;
+
+    const user = await User.findById(userId)
+      .select("-password")
+      .populate("paymentReq");
+
+    const domain = "https://www.sspports.xyz/payment-confirmation/cnfpymt";
+
+    const url = `https://${domain}/?reqid=${user.paymentReq.payReqId}&am=${amount}&status=SUCCESS/FAILED&utr=UTR_NUMBER`;
+
+    const response = await axios.get(url);
+
+    if (response.data.status === "FAILED") {
+      return res.status(400).json({
+        success: false,
+        message: "Payment verification failed",
+      });
+    }
+
+    await PaymentReqId.findByIdAndDelete(user.paymentReq._id);
+
+    afterPaymentActions(amount, userId);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error verifing payment",
     });
   }
 };
