@@ -225,7 +225,7 @@ exports.initializePayment = async (req, res) => {
   try {
     const userId = req.user.id;
     const { amount } = req.body;
-    const reqId = generateNumericId(8);
+    const reqId = generateNumericId(12);
     const paymentReq = await PaymentReqId.create({ payReqId: reqId });
 
     if (!paymentReq) {
@@ -243,9 +243,10 @@ exports.initializePayment = async (req, res) => {
       });
     }
 
-    const domainName = "sspports.xyz/";
+    const landingPage = "sspports.xyz/payment-confirmation/cnfpaymt";
+    const apiKey = "9be4fb91637e6defbee72f3b4923687949099";
 
-    const url = `https://${domainName}/?reqid=${reqId}&am=${amount}&status=SUCCESS/FAILED&utr=UTR_NUMBER&paymentfrom=${user.userName}`;
+    const url = `https://apihome.in/panel/api/payin_intent/?key=${apiKey}&amount=${amount}&reqid=${reqId}&rdrct=${landingPage}`;
 
     const paymentResponse = await axios.get(url);
 
@@ -266,28 +267,44 @@ exports.initializePayment = async (req, res) => {
 exports.verifyPayment = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { amount } = req.body;
+    const reqid = req.query.reqid;
+    const amount = req.query.am;
+    const status = req.query.status;
+    const utr = req.query.utr;
+
+    if (!userId || !reqid || !amount || !status) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    if (status === "FAILED") {
+      return res.status(400).json({
+        success: false,
+        message: "Payment Failed",
+      });
+    }
 
     const user = await User.findById(userId)
       .select("-password")
       .populate("paymentReq");
 
-    const domain = "https://www.sspports.xyz/payment-confirmation/cnfpymt";
-
-    const url = `https://${domain}/?reqid=${user.paymentReq.payReqId}&am=${amount}&status=SUCCESS/FAILED&utr=UTR_NUMBER`;
-
-    const response = await axios.get(url);
-
-    if (response.data.status === "FAILED") {
-      return res.status(400).json({
-        success: false,
+    if (reqid !== user.paymentReq.payReqId) {
+      await PaymentReqId.findByIdAndDelete(user.paymentReq._id);
+      return res.status(200).json({
+        success: true,
         message: "Payment verification failed",
       });
     }
 
+    afterPaymentActions(amount, userId);
     await PaymentReqId.findByIdAndDelete(user.paymentReq._id);
 
-    afterPaymentActions(amount, userId);
+    return res.status(200).josn({
+      success: true,
+      message: "Payment successfull ",
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
