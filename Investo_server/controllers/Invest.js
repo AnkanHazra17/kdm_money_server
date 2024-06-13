@@ -5,24 +5,12 @@ const Revenue = require("../models/Revenue");
 const { withrawalEmail } = require("../mail-temp/withrawalMail");
 const WithdrawalReq = require("../models/WithdrawalReq");
 const Paymenthistory = require("../models/PaymentHistory");
-const PaymentReqId = require("../models/PaymentReqId");
-const { default: axios } = require("axios");
-
-function generateNumericId(length) {
-  let result = "";
-  while (result.length < length) {
-    // Generate a random byte
-    const randomByte = crypto.randomBytes(1)[0];
-    // Convert the byte to a digit (0-9) and add to result if it's a valid digit
-    const digit = randomByte % 10;
-    result += digit.toString();
-  }
-  return result;
-}
 
 // After Payment call This Function
-const afterPaymentActions = async (amount, userId) => {
+exports.afterPaymentActions = async (req, res) => {
   try {
+    const { amount } = req.body;
+    const userId = req.user.id;
     if (!userId || !amount) {
       return res.status(400).json({
         success: false,
@@ -217,99 +205,6 @@ exports.withrawalRequest = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Something went while withrawaling money",
-    });
-  }
-};
-
-exports.initializePayment = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { amount } = req.body;
-    const reqId = generateNumericId(12);
-    const paymentReq = await PaymentReqId.create({ payReqId: reqId });
-
-    if (!paymentReq) {
-      return res.status(400).json({
-        success: false,
-        message: "Error creating payment reqId",
-      });
-    }
-
-    const user = await User.findById(userId).select("-password");
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User Not Found",
-      });
-    }
-
-    const landingPage = "sspports.xyz/payment-confirmation/cnfpaymt";
-    const apiKey = "9be4fb91637e6defbee72f3b4923687949099";
-
-    const url = `https://apihome.in/panel/api/payin_intent/?key=${apiKey}&amount=${amount}&reqid=${reqId}&rdrct=${landingPage}`;
-
-    const paymentResponse = await axios.get(url);
-
-    return res.status(200).json({
-      success: true,
-      message: "Transaction under process",
-      paymentResponse,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      message: "Error initializing payment",
-    });
-  }
-};
-
-exports.verifyPayment = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const reqid = req.query.reqid;
-    const amount = req.query.am;
-    const status = req.query.status;
-    const utr = req.query.utr;
-
-    if (!userId || !reqid || !amount || !status) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
-    }
-
-    if (status === "FAILED") {
-      return res.status(400).json({
-        success: false,
-        message: "Payment Failed",
-      });
-    }
-
-    const user = await User.findById(userId)
-      .select("-password")
-      .populate("paymentReq");
-
-    if (reqid !== user.paymentReq.payReqId) {
-      await PaymentReqId.findByIdAndDelete(user.paymentReq._id);
-      return res.status(200).json({
-        success: true,
-        message: "Payment verification failed",
-      });
-    }
-
-    afterPaymentActions(amount, userId);
-    await PaymentReqId.findByIdAndDelete(user.paymentReq._id);
-
-    return res.status(200).josn({
-      success: true,
-      message: "Payment successfull ",
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      message: "Error verifing payment",
     });
   }
 };
