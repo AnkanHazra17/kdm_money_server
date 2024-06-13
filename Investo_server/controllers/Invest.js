@@ -282,7 +282,7 @@ exports.verifyPayment = async (req, res) => {
       });
     }
 
-    await afterPaymentActions(amount, userId);
+    // await afterPaymentActions(amount, userId);
     await PaymentReqId.findByIdAndDelete(user.paymentReq._id);
 
     return res.status(200).josn({
