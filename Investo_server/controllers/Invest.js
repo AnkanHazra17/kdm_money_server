@@ -40,7 +40,7 @@ exports.afterPaymentActions = async (req, res) => {
     const decrese = (amount * dipositTax) / 100;
     const userAmount = amount - decrese;
     user.withrawalAmount += userAmount;
-    user.paymmentHistory.push(paymentHistory.amount);
+    user.paymmentHistory.push(paymentHistory._id);
     await user.save();
 
     const { levelOneBouns, levelTwoBonus, levelThreeBonus } = revenue;
