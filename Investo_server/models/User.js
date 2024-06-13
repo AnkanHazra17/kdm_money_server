@@ -49,10 +49,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    paymentReq: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "PaymentReqId",
-    },
     membersAdded: [
       {
         memberId: {

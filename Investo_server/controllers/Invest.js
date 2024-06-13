@@ -5,24 +5,13 @@ const Revenue = require("../models/Revenue");
 const { withrawalEmail } = require("../mail-temp/withrawalMail");
 const WithdrawalReq = require("../models/WithdrawalReq");
 const Paymenthistory = require("../models/PaymentHistory");
-const PaymentReqId = require("../models/PaymentReqId");
-const { default: axios } = require("axios");
-
-function generateNumericId(length) {
-  let result = "";
-  while (result.length < length) {
-    // Generate a random byte
-    const randomByte = crypto.randomBytes(1)[0];
-    // Convert the byte to a digit (0-9) and add to result if it's a valid digit
-    const digit = randomByte % 10;
-    result += digit.toString();
-  }
-  return result;
-}
 
 // After Payment call This Function
-const afterPaymentActions = async (amount, userId, res) => {
+
+exports.afterPaymentActions = async (req, res) => {
   try {
+    const { amount } = req.body;
+    const userId = req.user.id;
     if (!userId || !amount) {
       return res.status(400).json({
         success: false,
@@ -309,22 +298,22 @@ exports.verifyPayment = async (req, res) => {
   }
 };
 
-exports.paymentTest = async (req, res) => {
-  try {
-    const { amount } = req.body;
-    const userId = req.user.id;
+// exports.paymentTest = async (req, res) => {
+//   try {
+//     const { amount } = req.body;
+//     const userId = req.user.id;
 
-    await afterPaymentActions(amount, userId, res);
+//     await afterPaymentActions(amount, userId, res);
 
-    return res.status(200).json({
-      success: true,
-      message: "Payment successfull",
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      message: "Payment failed",
-    });
-  }
-};
+//     return res.status(200).json({
+//       success: true,
+//       message: "Payment successfull",
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Payment failed",
+//     });
+//   }
+// };
