@@ -95,7 +95,7 @@ exports.afterPaymentActions = async (req, res) => {
     console.log(error);
     return res.status(500).json({
       success: false,
-      message: "After Payment Actions failed",
+      message: `After Payment Actions failed ${error} `,
     });
   }
 };
