@@ -21,7 +21,7 @@ function generateNumericId(length) {
 }
 
 // After Payment call This Function
-const afterPaymentActions = async (amount, userId) => {
+const afterPaymentActions = async (amount, userId, res) => {
   try {
     if (!userId || !amount) {
       return res.status(400).json({
@@ -62,7 +62,7 @@ const afterPaymentActions = async (amount, userId) => {
     const usersParent = await User.findById(usersParentId).select("-password");
     if (usersParent) {
       if (!usersParent.levelOneCommision) {
-        const one_money = product?.price * (levelOneBouns / 100);
+        const one_money = amount * (levelOneBouns / 100);
         usersParent.withrawalAmount += one_money;
         usersParent.levelOneCommision = true;
         await usersParent.save();
@@ -74,7 +74,7 @@ const afterPaymentActions = async (amount, userId) => {
       );
       if (levelTwoParent) {
         if (!levelTwoParent.levelTwoCommision) {
-          const two_money = product?.price * (levelTwoBonus / 100);
+          const two_money = amount * (levelTwoBonus / 100);
           levelTwoParent.withrawalAmount += two_money;
           levelTwoParent.levelTwoCommision = true;
           await levelTwoParent.save();
@@ -86,7 +86,7 @@ const afterPaymentActions = async (amount, userId) => {
         );
         if (levelthreeParent) {
           if (!levelthreeParent.levelThreeCommition) {
-            const three_money = product?.price * (levelThreeBonus / 100);
+            const three_money = amount * (levelThreeBonus / 100);
             levelthreeParent.withrawalAmount += three_money;
             levelthreeParent.levelThreeCommition = true;
             await levelthreeParent.save();
@@ -98,11 +98,6 @@ const afterPaymentActions = async (amount, userId) => {
     revenue.totalRevenue += amount;
     revenue.dailyRevenue.push({ amount: amount });
     await revenue.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Payment Successful",
-    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -298,18 +293,38 @@ exports.verifyPayment = async (req, res) => {
       });
     }
 
-    afterPaymentActions(amount, userId);
+    await afterPaymentActions(amount, userId);
     await PaymentReqId.findByIdAndDelete(user.paymentReq._id);
 
     return res.status(200).josn({
       success: true,
-      message: "Payment successfull ",
+      message: "Payment successfull",
     });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
       success: false,
       message: "Error verifing payment",
+    });
+  }
+};
+
+exports.paymentTest = async (req, res) => {
+  try {
+    const { amount } = req.body;
+    const userId = req.user.id;
+
+    await afterPaymentActions(amount, userId, res);
+
+    return res.status(200).json({
+      success: true,
+      message: "Payment successfull",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Payment failed",
     });
   }
 };

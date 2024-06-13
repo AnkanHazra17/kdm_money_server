@@ -293,10 +293,22 @@ exports.getAmountDetails = async (req, res) => {
 
 exports.getTeam = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate(
-      "levelOneChield levelTwoChild levelThreeChild",
-      "userName email phone"
-    );
+    const user = await User.findById(req.user.id)
+      .populate({
+        path: "levelOneChield",
+        select: "userName email",
+        populate: { path: "paymmentHistory" },
+      })
+      .populate({
+        path: "levelTwoChild",
+        select: "userName email",
+        populate: { path: "paymmentHistory" },
+      })
+      .populate({
+        path: "levelThreeChild",
+        select: "userName email",
+        populate: { path: "paymmentHistory" },
+      });
 
     if (!user) {
       return res.status(404).json({
