@@ -146,7 +146,21 @@ exports.takeAction = async (req, res) => {
       });
     }
 
-    const currentDate = new Date();
+    const options = {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    };
+
+    const date = new Date();
+
+    const currentDate = date.toLocaleString("en-US", options);
+
     const revenue = await Revenue.findOne({ name: "Admin" });
     if (!revenue) {
       return res.status(404).json({
@@ -155,11 +169,11 @@ exports.takeAction = async (req, res) => {
       });
     }
 
-    if (
-      currentDate < revenue.callTime.start ||
-      currentDate > revenue.callTime.end
-    ) {
-      return res.statue(400).json({
+    const startTime = revenue.callTime.start.toLocaleString("en-US", options);
+    const endTime = revenue.callTime.end.toLocaleString("en-US", options);
+
+    if (currentDate < startTime || currentDate > endTime) {
+      return res.status(400).json({
         success: false,
         message: "You are not allowed to take any action",
       });
