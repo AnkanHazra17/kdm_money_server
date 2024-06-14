@@ -146,20 +146,20 @@ exports.takeAction = async (req, res) => {
       });
     }
 
-    const options = {
-      timeZone: "Asia/Kolkata",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    };
+    // const options = {
+    //   timeZone: "Asia/Kolkata",
+    //   year: "numeric",
+    //   month: "2-digit",
+    //   day: "2-digit",
+    //   hour: "2-digit",
+    //   minute: "2-digit",
+    //   second: "2-digit",
+    //   hour12: false,
+    // };
 
-    const date = new Date();
+    // const date = new Date();
 
-    const currentDate = date.toLocaleString("en-US", options);
+    // const currentDate = date.toLocaleString("en-US", options);
 
     const revenue = await Revenue.findOne({ name: "Admin" });
     if (!revenue) {
@@ -169,15 +169,18 @@ exports.takeAction = async (req, res) => {
       });
     }
 
-    const startTime = revenue.callTime.start.toLocaleString("en-US", options);
-    const endTime = revenue.callTime.end.toLocaleString("en-US", options);
+    // const startTime = revenue.callTime.start.toLocaleString("en-US", options);
+    // const endTime = revenue.callTime.end.toLocaleString("en-US", options);
 
-    if (currentDate < startTime || currentDate > endTime) {
-      return res.status(400).json({
-        success: false,
-        message: "You are not allowed to take any action",
-      });
-    }
+    // if (currentDate < startTime || currentDate > endTime) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "You are not allowed to take any action",
+    //     currentDate,
+    //     startTime,
+    //     endTime,
+    //   });
+    // }
 
     const product = await Product.findById(productId);
     if (!product) {
@@ -212,6 +215,9 @@ exports.takeAction = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Your balance updated",
+      // currentDate,
+      // startTime,
+      // endTime,
     });
   } catch (error) {
     console.log(error);
