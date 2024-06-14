@@ -87,6 +87,11 @@ exports.afterPaymentActions = async (req, res) => {
     revenue.totalRevenue += amount;
     revenue.dailyRevenue.push({ amount: amount });
     await revenue.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Payment sccessfull",
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -108,7 +113,7 @@ exports.withrawalRequest = async (req, res) => {
       });
     }
 
-    const currentTime = new Date();
+    // const currentTime = new Date();
 
     const revenue = await Revenue.findOne({ name: "Admin" });
     if (!revenue) {
@@ -117,15 +122,16 @@ exports.withrawalRequest = async (req, res) => {
         message: "Revenue Not Found",
       });
     }
-    if (
-      currentTime < revenue.withdrawTime.start ||
-      currentTime > revenue.withdrawTime.end
-    ) {
-      return res.status(200).json({
-        success: false,
-        message: "You are not allowed to withdraw at this monent",
-      });
-    }
+
+    // if (
+    //   currentTime < revenue.withdrawTime.start ||
+    //   currentTime > revenue.withdrawTime.end
+    // ) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "You are not allowed to withdraw at this monent",
+    //   });
+    // }
 
     const admin = await User.findOne({ accountType: "Admin" }).select(
       "-password"
@@ -285,9 +291,9 @@ exports.verifyPayment = async (req, res) => {
     // await afterPaymentActions(amount, userId);
     await PaymentReqId.findByIdAndDelete(user.paymentReq._id);
 
-    return res.status(200).josn({
+    return res.status(200).json({
       success: true,
-      message: "Payment successfull",
+      message: "Payment verified",
     });
   } catch (error) {
     console.log(error);
