@@ -28,6 +28,8 @@ app.use(
   })
 );
 
+app.use(cors());
+
 // Mount routes
 app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/refer", referalRoutes);
