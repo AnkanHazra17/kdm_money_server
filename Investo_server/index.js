@@ -28,7 +28,7 @@ app.use(
   })
 );
 
-app.use(cors());
+
 
 // Mount routes
 app.use("/api/v1/auth", userRoutes);
