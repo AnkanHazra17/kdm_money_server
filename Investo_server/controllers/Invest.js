@@ -190,6 +190,7 @@ exports.withrawalRequest = async (req, res) => {
       phone: user.phone,
       upi: upi,
       amount: withdrawalAmount,
+      totalAmount: amount,
     });
 
     withdrawalDetails.withdrawalRequest.push(withdrawalreq._id);

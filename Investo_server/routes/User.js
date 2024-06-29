@@ -11,6 +11,7 @@ const {
   getAmountDetails,
   getTeam,
   getTimeData,
+  changePassword,
 } = require("../controllers/Auth");
 const { auth, isPublic, isAdmin } = require("../middlewares/Auth");
 
@@ -44,5 +45,6 @@ router.get("/fetch-amount-details", auth, getAmountDetails);
 
 router.get("/get-team", auth, getTeam);
 router.get("/get-times-data", auth, getTimeData);
+router.post("/change-password", changePassword);
 
 module.exports = router;

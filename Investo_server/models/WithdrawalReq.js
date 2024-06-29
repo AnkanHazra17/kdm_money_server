@@ -13,6 +13,10 @@ const withdrawalReqSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  totalAmount: {
+    type: Number,
+    required: true,
+  },
   amount: {
     type: Number,
     required: true,

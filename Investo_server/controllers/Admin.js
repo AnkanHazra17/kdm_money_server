@@ -411,6 +411,18 @@ exports.rejectWithdrawalRequest = async (req, res) => {
       });
     }
 
+    const user = await User.findOne({ phone: requset.phone });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User Not Found",
+      });
+    }
+
+    user.withrawalAmount += requset.totalAmount;
+    await user.save();
+
     return res.status(200).json({
       success: true,
       message: "Request Rejected",
