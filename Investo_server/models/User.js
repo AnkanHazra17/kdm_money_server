@@ -58,7 +58,6 @@ const userSchema = new mongoose.Schema(
         dateAdded: {
           type: Date,
           default: Date.now(),
-          expires: 604800,
         },
       },
     ],
